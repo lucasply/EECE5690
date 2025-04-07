@@ -51,6 +51,8 @@ try:
             CustId int,
             TransactionId int,
             date date,
+            TotalPreTax float,
+            TotalPostTax float,
             PRIMARY KEY (CustId, TransactionId),
             FOREIGN KEY (CustId) REFERENCES Customer(CustId)
             );
@@ -66,6 +68,7 @@ try:
             CustId int,
             TransactionId int,
             ProductId int,
+            ProductType varchar(50),
             quantity int,
             price float,
             PRIMARY KEY (CustId, TransactionId, ProductId),
@@ -106,4 +109,4 @@ try:
 except:
     print("error in creating table 5")
 
-# Insert data 
+

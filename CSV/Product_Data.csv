@@ -1,4 +1,4 @@
-﻿CustId,TransactionId,ProductId,ProductType,quantity,price
+﻿CustomerID,TransactionId,ProductId,ProductType,quantity,price
 1,TXN-0001-001,84,Electronics,1,93.34
 1,TXN-0001-001,69,Home,5,68.04
 1,TXN-0001-002,1,Beauty,3,234.19

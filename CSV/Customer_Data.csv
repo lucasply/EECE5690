@@ -1,4 +1,4 @@
-﻿CustId,name,address,age,gender
+﻿CustomerID,name,address,age,gender
 1,Tara Ortiz,"27048 Bryan Vista Schaeferberg, WA 79415",36,Other
 2,Taylor Clark,"50303 Michelle Unions Port Brooke, WA 32539",37,Other
 3,Heather Harvey,"825 Schmitt Landing Suite 984 North Barryhaven, MT 35228",55,Other

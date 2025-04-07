@@ -12,7 +12,7 @@ from mysql.connector import errorcode
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="Password"
+  password="Password!"
 )
 
 mycursor = mydb.cursor()
@@ -25,7 +25,7 @@ print("Database created successfully or already exists.")
 connection = mysql.connector.connect(host='localhost',
                                          database='Project',
                                          user='root',
-                                         password='Password')
+                                         password='Password!')
 
 cursor = connection.cursor()
 
@@ -34,12 +34,12 @@ try:
     cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Customer (
-            CustId int,
+            CustomerId int,
             name varchar(50),
             address varchar(100),
             age int,
             gender varchar(10),
-            PRIMARY KEY (CustId)
+            PRIMARY KEY (CustomerId)
             );
             """
         )
@@ -52,14 +52,14 @@ try:
     cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Transaction (
-            CustId int,
+            CustomerID int,
             TransactionNum int,
-            TransactionId varchar(20),
-            date date,
+            TransactionID varchar(20),
+            Date date,
             TotalPreTax decimal(10,2) NULL,
             TotalPostTax decimal(10,2) NULL,
-            PRIMARY KEY (CustId, TransactionId),
-            FOREIGN KEY (CustId) REFERENCES Customer(CustId)
+            PRIMARY KEY (CustomerId, TransactionId),
+            FOREIGN KEY (CustomerId) REFERENCES Customer(CustomerId)
             );
             """
         )
@@ -70,14 +70,14 @@ try:
     cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Product (
-            CustId int,
-            TransactionId int,
+            CustomerId int,
+            TransactionId varchar(20),
             ProductId int,
             ProductType varchar(50),
             quantity int,
             price decimal(10,2),
-            PRIMARY KEY (CustId, TransactionId, ProductId),
-            FOREIGN KEY (CustId, TransactionId) REFERENCES Transaction(CustId, TransactionId)
+            PRIMARY KEY (CustomerId, TransactionId, ProductId),
+            FOREIGN KEY (CustomerId, TransactionId) REFERENCES Transaction(CustomerId, TransactionId)
             );
             """
         )
@@ -92,6 +92,7 @@ try:
             Role varchar(50),
             Department varchar(50),
             PRIMARY KEY (Id)
+            );
             """
         )
 except:
@@ -100,6 +101,7 @@ except:
 try:
     cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS Supervisor (
             Id int,  -- Employee's unique ID
             SupervisorId int,  -- Supervisor's unique ID (foreign key to Emp)
             Role varchar(50),

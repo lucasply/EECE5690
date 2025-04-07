@@ -8,7 +8,7 @@ import numpy as np
 from mysql.connector import errorcode
 
 # Create the database if it doesn't exist
-'''
+
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
@@ -17,8 +17,8 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
-mycursor.execute("CREATE DATABASE Project")
-'''
+mycursor.execute("CREATE DATABASE IF NOT EXISTS Project")
+
 # Connect to DB
 connection = mysql.connector.connect(host='localhost',
                                          database='Project',
@@ -105,3 +105,5 @@ try:
         )
 except:
     print("error in creating table 5")
+
+# Insert data 

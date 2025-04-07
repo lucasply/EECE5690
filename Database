@@ -1,0 +1,107 @@
+# This is our python code for our EECE 5690 project
+
+# Import relevant libraries
+import mysql.connector
+import keyring
+import pandas as pd
+import numpy as np
+from mysql.connector import errorcode
+
+# Create the database if it doesn't exist
+'''
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="Password"
+)
+
+mycursor = mydb.cursor()
+
+mycursor.execute("CREATE DATABASE Project")
+'''
+# Connect to DB
+connection = mysql.connector.connect(host='localhost',
+                                         database='Project',
+                                         user='root',
+                                         password='Password')
+
+cursor = connection.cursor()
+
+# Create tables
+try:
+    cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Customer (
+            CustId int,
+            name varchar(50),
+            address varchar(250),
+            age int,
+            gender varchar(10),
+            PRIMARY KEY (CustId)
+            );
+            """
+        )
+except:
+    print("error in creating table 1")
+
+try:
+    cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Transaction (
+            CustId int,
+            TransactionId int,
+            date date,
+            PRIMARY KEY (CustId, TransactionId),
+            FOREIGN KEY (CustId) REFERENCES Customer(CustId)
+            );
+            """
+        )
+except:
+    print("error in creating table 2")
+
+try:
+    cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Product (
+            CustId int,
+            TransactionId int,
+            ProductId int,
+            quantity int,
+            price float,
+            PRIMARY KEY (CustId, TransactionId, ProductId),
+            FOREIGN KEY (CustId, TransactionId) REFERENCES Transaction(CustId, TransactionId)
+            );
+            """
+        )
+except:
+    print("error in creating table 3")
+
+try:
+    cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Emp (
+            Id int,
+            Role varchar(50),
+            Department varchar(50),
+            PRIMARY KEY (Id)
+            );
+            """
+        )
+except:
+    print("error in creating table 4")
+
+try:
+    cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS Superviser (
+            Id int,
+            SupervisorId int,
+            Role varchar(50),
+            Department varchar(50),
+            PRIMARY KEY (Id, SupervisorId),
+            FOREIGN KEY (SupervisorId) REFERENCES Emp(Id)
+            );
+            """
+        )
+except:
+    print("error in creating table 5")

@@ -1,0 +1,14 @@
+﻿Id,SupervisorID,Role,Dept
+1,0,Owner,
+2,1,VP,Sales
+3,1,VP,Engineering
+4,1,VP,HR
+5,2,Manager,Sales
+6,2,Manager,Sales
+7,2,Manager,Sales
+8,3,Manager,Engineering
+9,3,Manager,Engineering
+10,3,Manager,Engineering
+11,4,Manager,HR
+12,4,Manager,HR
+13,4,Manager,HR

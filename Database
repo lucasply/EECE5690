@@ -19,6 +19,8 @@ mycursor = mydb.cursor()
 
 mycursor.execute("CREATE DATABASE IF NOT EXISTS Project")
 
+print("Database created successfully or already exists.")
+
 # Connect to DB
 connection = mysql.connector.connect(host='localhost',
                                          database='Project',
@@ -34,7 +36,7 @@ try:
             CREATE TABLE IF NOT EXISTS Customer (
             CustId int,
             name varchar(50),
-            address varchar(250),
+            address varchar(100),
             age int,
             gender varchar(10),
             PRIMARY KEY (CustId)
@@ -44,15 +46,18 @@ try:
 except:
     print("error in creating table 1")
 
+# The Transaction table stores information about each transaction made by a customer. 
+# Pre and Post tax are going to be derived from product, so NULL for now.
 try:
     cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Transaction (
             CustId int,
-            TransactionId int,
+            TransactionNum int,
+            TransactionId varchar(20),
             date date,
-            TotalPreTax float,
-            TotalPostTax float,
+            TotalPreTax decimal(10,2) NULL,
+            TotalPostTax decimal(10,2) NULL,
             PRIMARY KEY (CustId, TransactionId),
             FOREIGN KEY (CustId) REFERENCES Customer(CustId)
             );
@@ -70,7 +75,7 @@ try:
             ProductId int,
             ProductType varchar(50),
             quantity int,
-            price float,
+            price decimal(10,2),
             PRIMARY KEY (CustId, TransactionId, ProductId),
             FOREIGN KEY (CustId, TransactionId) REFERENCES Transaction(CustId, TransactionId)
             );
@@ -83,11 +88,10 @@ try:
     cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Emp (
-            Id int,
+            Id int,  
             Role varchar(50),
             Department varchar(50),
             PRIMARY KEY (Id)
-            );
             """
         )
 except:
@@ -96,12 +100,11 @@ except:
 try:
     cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS Superviser (
-            Id int,
-            SupervisorId int,
+            Id int,  -- Employee's unique ID
+            SupervisorId int,  -- Supervisor's unique ID (foreign key to Emp)
             Role varchar(50),
             Department varchar(50),
-            PRIMARY KEY (Id, SupervisorId),
+            PRIMARY KEY (Id, SupervisorId),  
             FOREIGN KEY (SupervisorId) REFERENCES Emp(Id)
             );
             """
@@ -110,3 +113,7 @@ except:
     print("error in creating table 5")
 
 
+print("All tables created successfully, or already exist.")
+
+# Close the cursor and connection
+cursor.close()

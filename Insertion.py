@@ -6,7 +6,7 @@ import numpy as np
 # Connect to DB
 connection = mysql.connector.connect(
     host='localhost',
-    database='Project',
+    database='project',
     user='root',
     password='Password!'
 )
@@ -20,7 +20,7 @@ df['Date'] = pd.to_datetime(df['Date'], errors='coerce').dt.date
 
 for row in df.itertuples(index=False):
     data = (row.CustomerID, row.TransactionNum, row.TransactionID, row.Date)
-    cursor.execute("""INSERT IGNORE INTO `Transaction` (CustomerID, TransactionNum, TransactionId, date)
+    cursor.execute("""INSERT IGNORE INTO `transaction` (CustomerID, TransactionNum, TransactionId, date)
                       VALUES (%s, %s, %s, %s)""", data)
 
 # Commit the changes
@@ -32,7 +32,7 @@ df = df.replace(np.nan, None)
 
 for row in df.itertuples(index=False):
     data = (row.CustomerID, row.name, row.address, row.age, row.gender)
-    cursor.execute("""INSERT IGNORE INTO Customer (CustomerID, name, address, age, gender)
+    cursor.execute("""INSERT IGNORE INTO customer (CustomerID, name, address, age, gender)
                   VALUES (%s, %s, %s, %s, %s)""", data)
 connection.commit()
 
@@ -45,7 +45,7 @@ df = df.replace(np.nan, None)
 
 for row in df.itertuples(index=False):
     data = (row.CustomerID, row.TransactionId, row.ProductId, row.ProductType, row.quantity, row.price)
-    cursor.execute("""INSERT IGNORE INTO Product (CustomerID, TransactionId, ProductId, ProductType, quantity, price)
+    cursor.execute("""INSERT IGNORE INTO product (CustomerID, TransactionId, ProductId, ProductType, quantity, price)
                     VALUES (%s, %s, %s, %s, %s, %s)""", data)
 connection.commit()
 
@@ -60,7 +60,7 @@ totals = totals.drop(columns=['line_total'])
 
 for row in totals.itertuples(index=False):
     data = (row.TotalPreTax, row.TotalPostTax, row.TransactionId)
-    cursor.execute("""UPDATE `Transaction`
+    cursor.execute("""UPDATE `transaction`
                       SET TotalPreTax = %s, TotalPostTax = %s
                       WHERE TransactionId = %s""", data)
 

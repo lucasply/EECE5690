@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Fetch - Retail DB</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background-color: #4CAF50;
+      color: white;
+      padding: 20px;
+      font-size: 24px;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    .form-container {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 200px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    table {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Retail DB</h1>
+    <p>Search Customer Data</p>
+  </header>
+
+  <div class="container">
+    <div class="form-container">
+      <input type="text" id="Value" placeholder="CustomerId (e.g., 1)" required />
+      <button onclick="fetchCustomer()">Search</button>
+    </div>
+
+    <table id="results">
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function fetchCustomer() {
+      const value = document.getElementById("Value").value;
+      const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/CustomerSearch`; 
+
+      try {
+        const response = await fetch(`${endpoint}?value=${encodeURIComponent(value)}`);
+
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Empty the table body before appending new data
+        const tbody = document.querySelector('#results tbody');
+        tbody.innerHTML = '';
+
+        // Check if data is an array and contains at least one object
+        if (Array.isArray(data) && data.length > 0) {
+          const customer = data[0]; // Assuming the data returns a single customer object
+
+          // Loop through the customer object and create table rows
+          for (const key in customer) {
+            if (customer.hasOwnProperty(key)) {
+              const row = document.createElement('tr');
+
+              const colName = document.createElement('td');
+              colName.textContent = key;
+              row.appendChild(colName);
+
+              const colValue = document.createElement('td');
+              colValue.textContent = customer[key];
+              row.appendChild(colValue);
+
+              tbody.appendChild(row);
+            }
+          }
+        } else {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 2;
+          cell.textContent = "No data found";
+          row.appendChild(cell);
+          tbody.appendChild(row);
+        }
+
+      } catch (err) {
+        // Handle errors 
+        const tbody = document.querySelector('#results tbody');
+        tbody.innerHTML = '';
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 2;
+        cell.textContent = `Error: ${err.message}`;
+        row.appendChild(cell);
+        tbody.appendChild(row);
+      }
+    }
+  </script>
+</body>
+</html>

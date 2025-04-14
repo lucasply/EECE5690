@@ -5,3 +5,7 @@ Database created using Python, storing data on MySQL. For the website, it is bei
 
 
 Website: http://eece5690-frontend.s3-website.us-east-2.amazonaws.com/
+
+RDS endpoint: mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com
+RDS user: admin
+RDS password: admin123

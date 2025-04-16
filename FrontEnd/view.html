@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<html>
+<head>
+    <title>View Records - Retail Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>View Database Records</h1>
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="add.html">Add</a> |
+            <a href="remove.html">Remove</a> |
+            <a href="modify.html">Modify</a> |
+            <a href="view.html">View</a>
+        </nav>
+    </header>
+
+
+    <h2>Search Records</h2>
+    <form>
+        <div>
+            <label for="table">Table:</label>
+            <select id="table" name="table" onchange="updateSearchFields()">
+                <option value="customer">Customers</option>
+                <option value="emp">Employees</option>
+                <option value="product">Products</option>
+                <option value="transaction">Transactions</option>
+                <option value="supervisor">Superiors</option>
+            </select>
+        </div>
+        <div>
+            <label for="search_field">Search Field:</label>
+            <select id="search_field" name="search_field">
+                <!-- Options will be dynamically inserted here -->
+            </select>
+        </div>
+        <div>
+            <label for="search_term">Search Term:</label>
+            <input type="text" id="search_term" name="search_term">
+        </div>
+        <button onclick="Search(event)">Search</button>
+    </form>
+
+    <table id="results">
+        <thead>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Results will be dynamically inserted here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Define search fields for each table
+        const searchFields = {
+            customer: [
+                { value: "customerId", label: "ID" },
+                { value: "name", label: "Name" },
+                { value: "address", label: "Address" },
+                { value: "age", label: "Age" },
+                { value: "gender", label: "Gender" }
+            ],
+            transaction: [
+                { value: "customerId", label: "Customer ID" },
+                { value: "TransactionNum", label: "Transaction Number" },
+                { value: "TransactionID", label: "Transaction ID" },
+                { value: "Date", label: "Date" }              
+            ],
+            product: [
+                { value: "customerId", label: "Customer ID" },
+                { value: "transactionID", label: "Transaction ID" },
+                { value: "productId", label: "Product ID" },
+                { value: "ProductType", label: "Product Type" }
+            ],
+            emp: [
+                { value: "Id", label: "ID" },
+                { value: "role", label: "Role" },
+                { value: "department", label: "Department" }
+            ],
+            supervisor: [
+                { value: "Id", label: "ID" },
+                { value: "SupervisorId", label: "Supervisor ID" },
+                { value: "Role", label: "Role" },
+                { value: "Department", label: "Department" }
+            ]
+        };
+
+        // Function to update the search_field dropdown based on the selected table
+        function updateSearchFields() {
+            const table = document.getElementById("table").value;
+            const searchFieldDropdown = document.getElementById("search_field");
+
+            // Clear existing options
+            searchFieldDropdown.innerHTML = "";
+
+            // Populate new options based on the selected table
+            if (searchFields[table]) {
+                searchFields[table].forEach(field => {
+                    const option = document.createElement("option");
+                    option.value = field.value;
+                    option.textContent = field.label;
+                    searchFieldDropdown.appendChild(option);
+                });
+            }
+        }
+
+        // Initialize the search_field dropdown on page load
+        document.addEventListener("DOMContentLoaded", updateSearchFields);
+
+        async function Search(event) {
+            event.preventDefault(); // Prevent the form from submitting and reloading the page
+
+            const value = document.getElementById("table").value;
+            if (value == "customer") Customer_Search();
+            if (value == "emp") Employee_Search();
+            if (value == "product") Product_Search();
+            if (value == "transaction") Transaction_Search();
+            if (value == "supervisor") Superior_Search();
+        }
+
+        async function Customer_Search() {
+            const field = document.getElementById("search_field").value;
+            const term = document.getElementById("search_term").value;
+            const resultsContainer = document.getElementById('results'); // move this to top
+
+            resultsContainer.innerHTML = ""; // Clear previous results at the start
+
+            if (!term.trim()) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/CustomerSearch`;
+
+            try {
+                const response = await fetch(`${endpoint}?${field}=${encodeURIComponent(term)}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('API Response:', data);
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(customer => {
+                        const wrapper = document.createElement('div');
+                        wrapper.classList.add('customer-container');
+
+                        const table = document.createElement('table');
+                        table.classList.add('results-table');
+
+                        const tbody = document.createElement('tbody');
+
+                        for (const key in customer) {
+                            if (customer.hasOwnProperty(key)) {
+                                const row = document.createElement('tr');
+
+                                const colName = document.createElement('td');
+                                colName.textContent = key;
+                                colName.style.fontWeight = 'bold';
+                                row.appendChild(colName);
+
+                                const colValue = document.createElement('td');
+                                colValue.textContent = customer[key];
+                                row.appendChild(colValue);
+
+                                tbody.appendChild(row);
+                            }
+                        }
+
+                        table.appendChild(tbody);
+                        wrapper.appendChild(table);
+                        resultsContainer.appendChild(wrapper);
+
+                        // Optional: spacing between entries
+                        const spacer = document.createElement('div');
+                        spacer.style.height = "20px";
+                        resultsContainer.appendChild(spacer);
+                    });
+                } else {
+                    const message = document.createElement('p');
+                    message.textContent = "No data found.";
+                    resultsContainer.appendChild(message);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                resultsContainer.innerHTML = ''; // Clear in case something was there
+
+                const errorMsg = document.createElement('p');
+                errorMsg.textContent = `Error: ${err.message}`;
+                errorMsg.style.color = "red";
+                resultsContainer.appendChild(errorMsg);
+            }
+        }
+
+
+        async function Employee_Search(){
+            const field = document.getElementById("search_field").value;
+            const term = document.getElementById("search_term").value;
+
+            if (!term.trim()) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/EmpSearch`;
+
+            try {
+                const response = await fetch(`${endpoint}?${field}=${encodeURIComponent(term)}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json(); // Directly parse the response as JSON
+                console.log('API Response:', data); // Debugging log
+
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = ''; // Clear previous results
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(customer => {
+                        for (const key in customer) {
+                            if (customer.hasOwnProperty(key)) {
+                                const row = document.createElement('tr');
+
+                                // Create a cell for the data label (e.g., "CustomerId")
+                                const colName = document.createElement('td');
+                                colName.textContent = key; // Field name
+                                colName.style.fontWeight = 'bold'; // Optional: Make the label bold
+                                row.appendChild(colName);
+
+                                // Create a cell for the respective value (e.g., "2")
+                                const colValue = document.createElement('td');
+                                colValue.textContent = customer[key]; // Field value
+                                row.appendChild(colValue);
+
+                                // Append the row directly to the table body
+                                resultsContainer.appendChild(row);
+                            }
+                        }
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 2;
+                    cell.textContent = "No data found";
+                    row.appendChild(cell);
+                    resultsContainer.appendChild(row);
+                }
+            } catch (err) {
+                console.error('Error:', err); // Log the error for debugging
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = `Error: ${err.message}`;
+                row.appendChild(cell);
+                resultsContainer.appendChild(row);
+            }
+        }
+        async function Product_Search(){
+            const field = document.getElementById("search_field").value;
+            const term = document.getElementById("search_term").value;
+
+            if (!term.trim()) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/ProductSearch`;
+
+            try {
+                const response = await fetch(`${endpoint}?${field}=${encodeURIComponent(term)}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json(); // Directly parse the response as JSON
+                console.log('API Response:', data); // Debugging log
+
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = ''; // Clear previous results
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(customer => {
+                        for (const key in customer) {
+                            if (customer.hasOwnProperty(key)) {
+                                const row = document.createElement('tr');
+
+                                // Create a cell for the data label (e.g., "CustomerId")
+                                const colName = document.createElement('td');
+                                colName.textContent = key; // Field name
+                                colName.style.fontWeight = 'bold'; // Optional: Make the label bold
+                                row.appendChild(colName);
+
+                                // Create a cell for the respective value (e.g., "2")
+                                const colValue = document.createElement('td');
+                                colValue.textContent = customer[key]; // Field value
+                                row.appendChild(colValue);
+
+                                // Append the row directly to the table body
+                                resultsContainer.appendChild(row);
+                            }
+                        }
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 2;
+                    cell.textContent = "No data found";
+                    row.appendChild(cell);
+                    resultsContainer.appendChild(row);
+                }
+            } catch (err) {
+                console.error('Error:', err); // Log the error for debugging
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = `Error: ${err.message}`;
+                row.appendChild(cell);
+                resultsContainer.appendChild(row);
+            }
+        }
+        async function Transaction_Search(){
+            const field = document.getElementById("search_field").value;
+            const term = document.getElementById("search_term").value;
+
+            if (!term.trim()) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/TransactionSearch`;
+
+            try {
+                const response = await fetch(`${endpoint}?${field}=${encodeURIComponent(term)}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json(); // Directly parse the response as JSON
+                console.log('API Response:', data); // Debugging log
+
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = ''; // Clear previous results
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(customer => {
+                        for (const key in customer) {
+                            if (customer.hasOwnProperty(key)) {
+                                const row = document.createElement('tr');
+
+                                // Create a cell for the data label (e.g., "CustomerId")
+                                const colName = document.createElement('td');
+                                colName.textContent = key; // Field name
+                                colName.style.fontWeight = 'bold'; // Optional: Make the label bold
+                                row.appendChild(colName);
+
+                                // Create a cell for the respective value (e.g., "2")
+                                const colValue = document.createElement('td');
+                                colValue.textContent = customer[key]; // Field value
+                                row.appendChild(colValue);
+
+                                // Append the row directly to the table body
+                                resultsContainer.appendChild(row);
+                            }
+                        }
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 2;
+                    cell.textContent = "No data found";
+                    row.appendChild(cell);
+                    resultsContainer.appendChild(row);
+                }
+            } catch (err) {
+                console.error('Error:', err); // Log the error for debugging
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = `Error: ${err.message}`;
+                row.appendChild(cell);
+                resultsContainer.appendChild(row);
+            }
+        }
+        async function Superior_Search(){
+            const field = document.getElementById("search_field").value;
+            const term = document.getElementById("search_term").value;
+
+            if (!term.trim()) {
+                alert("Please enter a search term.");
+                return;
+            }
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/SuperiorSearch`;
+
+            try {
+                const response = await fetch(`${endpoint}?${field}=${encodeURIComponent(term)}`);
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json(); // Directly parse the response as JSON
+                console.log('API Response:', data); // Debugging log
+
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = ''; // Clear previous results
+
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(customer => {
+                        for (const key in customer) {
+                            if (customer.hasOwnProperty(key)) {
+                                const row = document.createElement('tr');
+
+                                // Create a cell for the data label (e.g., "CustomerId")
+                                const colName = document.createElement('td');
+                                colName.textContent = key; // Field name
+                                colName.style.fontWeight = 'bold'; // Optional: Make the label bold
+                                row.appendChild(colName);
+
+                                // Create a cell for the respective value (e.g., "2")
+                                const colValue = document.createElement('td');
+                                colValue.textContent = customer[key]; // Field value
+                                row.appendChild(colValue);
+
+                                // Append the row directly to the table body
+                                resultsContainer.appendChild(row);
+                            }
+                        }
+                    });
+                } else {
+                    const row = document.createElement('tr');
+                    const cell = document.createElement('td');
+                    cell.colSpan = 2;
+                    cell.textContent = "No data found";
+                    row.appendChild(cell);
+                    resultsContainer.appendChild(row);
+                }
+            } catch (err) {
+                console.error('Error:', err); // Log the error for debugging
+                const resultsContainer = document.querySelector('#results tbody');
+                resultsContainer.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 2;
+                cell.textContent = `Error: ${err.message}`;
+                row.appendChild(cell);
+                resultsContainer.appendChild(row);
+            }
+        }
+    </script>    
+    
+</body>
+</html>

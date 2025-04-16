@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Remove Records - Retail Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Remove Records from Database</h1>
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="add.html">Add</a> |
+            <a href="remove.html">Remove</a> |
+            <a href="view.html">View</a>
+        </nav>
+    </header>
+
+    <h2>Remove Customer</h2>
+    <form>
+        <div>
+            <label for="CustomerId">Customer ID:</label>
+            <input type="number" id="CustomerId" name="CustomerId" required>
+        </div>
+        <button onclick="RemoveCustomer(event)">Delete</button>
+        <div>
+        <pre id="results"></pre>
+        </div>
+    </form>
+
+    <h2>Remove Employee</h2>
+    <form>
+        <div>
+            <label for="Id">Employee ID:</label>
+            <input type="number" id="Id" name="Id" required>
+        </div>
+        <button onclick="RemoveEmployee(event)">Delete</button>
+        <div>
+        <pre id="results1"></pre>
+        </div>
+    </form>
+
+    <h2>Remove Product</h2>
+    <form>
+        <div>
+            <label for="PTransactionId">Transaction ID:</label>
+            <input type="text" id="PTransactionId" name="PTransactionId" required>
+        </div>
+        <div>
+            <label for="ProductId">Product ID:</label>
+            <input type="number" id="ProductId" name="ProductId" required>
+        </div>
+        <button onclick="RemoveProduct(event)">Delete</button>
+        <div>
+        <pre id="results2"></pre>
+        </div>
+    </form>
+
+    <h2>Remove Transaction</h2>
+    <form>
+        <div>
+            <label for="TCustomerId">Customer ID:</label>
+            <input type="number" id="TCustomerId" name="TCustomerId" required>
+        </div>
+        <div>
+            <label for="TransactionId">Transaction ID:</label>
+            <input type="text" id="TransactionId" name="TransactionId" required>
+        </div>
+        <button onclick="RemoveTransaction(event)">Delete</button>
+        <div>
+        <pre id="results3"></pre>
+        </div>
+    </form>
+
+    <h2>Remove Supervisor</h2>
+    <form>
+        <div>
+            <label for="SId">Employee ID:</label>
+            <input type="number" id="SId" name="SId" required>
+        </div>
+        <button onclick="RemoveSupervisor(event)">Delete</button>
+        <div>
+            <pre id="results4"></pre>
+        </div>
+    </form>
+    
+    <script>
+        async function RemoveCustomer(event) {
+            event.preventDefault(); // Prevent the form from refreshing the page
+            document.getElementById("results").textContent = "";
+            // Get the CustomerId value from the input field
+            const customerId = document.getElementById("CustomerId").value;
+
+            // Validate that CustomerId is provided
+            if (!customerId) {
+                document.getElementById("results").textContent = "Error: Customer ID is required.";
+                return;
+            }
+
+            // Define the API Gateway endpoint
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/DeleteCustomer?value=${customerId}`;
+
+            try {
+                // Display a loading message
+                document.getElementById("results").textContent = "Deleting customer...";
+
+                // Make the DELETE request to the API Gateway
+                const response = await fetch(endpoint, {
+                    method: "DELETE", // Use DELETE method for deletion
+                });
+
+                // Check if the response is successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Display success message
+                document.getElementById("results").textContent = `Customer with ID: ${customerId} deleted successfully.`;
+            } catch (err) {
+                // Display error message
+                document.getElementById("results").textContent = `Error: ${err.message}`;
+            }
+        }
+
+        async function RemoveEmployee(event){
+            event.preventDefault(); // Prevent the form from refreshing the page
+            document.getElementById("results1").textContent = "";
+            // Get the CustomerId value from the input field
+            const Id = document.getElementById("Id").value;
+
+            // Validate that CustomerId is provided
+            if (!Id) {
+                document.getElementById("results1").textContent = "Error: Employee ID is required.";
+                return;
+            }
+
+            // Define the API Gateway endpoint
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/DeleteEmployee?value=${Id}`;
+
+            try {
+                // Display a loading message
+                document.getElementById("results1").textContent = "Deleting employee...";
+
+                // Make the DELETE request to the API Gateway
+                const response = await fetch(endpoint, {
+                    method: "DELETE", // Use DELETE method for deletion
+                });
+
+                // Check if the response is successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Display success message
+                document.getElementById("results1").textContent = `Employee with ID: ${Id} deleted successfully.`;
+            } catch (err) {
+                // Display error message
+                document.getElementById("results1").textContent = `Error: ${err.message}`;
+            }
+        }
+    
+        async function RemoveProduct(event) {
+            event.preventDefault(); // Prevent the form from refreshing the page
+
+            // Get the TransactionId and ProductId values from the input fields
+            const transactionId = document.getElementById("PTransactionId").value;
+            const productId = document.getElementById("ProductId").value;
+
+            // Validate that both TransactionId and ProductId are provided
+            if (!transactionId || !productId) {
+                document.getElementById("results2").textContent = "Error: Both Transaction ID and Product ID are required.";
+                return;
+            }
+
+            // Define the API Gateway endpoint with query string parameters
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/DeleteProduct?transactionId=${transactionId}&productId=${productId}`;
+
+            try {
+                // Display a loading message
+                document.getElementById("results2").textContent = "Deleting product...";
+
+                // Make the DELETE request to the API Gateway
+                const response = await fetch(endpoint, {
+                    method: "DELETE", // Use DELETE method for deletion
+                });
+
+                // Check if the response is successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Display success message
+                document.getElementById("results2").textContent = `Product with ID: ${productId} in Transaction: ${transactionId} deleted successfully.`;
+            } catch (err) {
+                // Display error message
+                document.getElementById("results2").textContent = `Error: ${err.message}`;
+            }
+        }
+
+        async function RemoveTransaction(event) {
+            event.preventDefault(); // Prevent the form from refreshing the page
+
+            // Get the CustomerId and TransactionId values from the input fields
+            const customerId = document.getElementById("TCustomerId").value;
+            const transactionId = document.getElementById("TransactionId").value;
+
+            // Validate that both CustomerId and TransactionId are provided
+            if (!customerId || !transactionId) {
+                document.getElementById("results3").textContent = "Error: Both Customer ID and Transaction ID are required.";
+                return;
+            }
+
+            // Define the API Gateway endpoint with query string parameters
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/DeleteTransaction?customerId=${customerId}&transactionId=${transactionId}`;
+
+            try {
+                // Display a loading message
+                document.getElementById("results3").textContent = "Deleting transaction...";
+
+                // Make the DELETE request to the API Gateway
+                const response = await fetch(endpoint, {
+                    method: "DELETE", // Use DELETE method for deletion
+                });
+
+                // Check if the response is successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Display success message
+                document.getElementById("results3").textContent = `Transaction with ID: ${transactionId} for Customer: ${customerId} deleted successfully.`;
+            } catch (err) {
+                // Display error message
+                document.getElementById("results3").textContent = `Error: ${err.message}`;
+            }
+        }
+        
+        async function RemoveSupervisor(event){
+            console.log("RemoveSupervisor function triggered");
+            event.preventDefault(); 
+            
+            document.getElementById("results4").textContent = "";
+            // Get the CustomerId value from the input field
+            const SId = document.getElementById("SId").value;
+            console.log("Id: ", SId);
+
+            // Validate that CustomerId is provided
+            if (!Id) {
+                document.getElementById("results4").textContent = "Error: Employee ID is required.";
+                return;
+            }
+
+            // Define the API Gateway endpoint
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/DeleteSupervisor?value=${SId}`;
+
+            try {
+                // Display a loading message
+                document.getElementById("results4").textContent = "Deleting supervisor...";
+
+                // Make the DELETE request to the API Gateway
+                const response = await fetch(endpoint, {
+                    method: "DELETE", // Use DELETE method for deletion
+                });
+
+                // Check if the response is successful
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `Server returned ${response.status}`);
+                }
+
+                // Parse the response data
+                const data = await response.json();
+
+                // Display success message
+                document.getElementById("results4").textContent = `Supervisor with ID: ${SId} deleted successfully.`;
+            } catch (err) {
+                // Display error message
+                document.getElementById("results4").textContent = `Error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

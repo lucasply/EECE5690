@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Records - Retail Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Add Records to Database</h1>
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="add.html">Add</a> |
+            <a href="remove.html">Remove</a> |
+            <a href="view.html">View</a>
+        </nav>
+    </header>
+    
+    <h2>Add New Customer</h2>
+    <form>
+        <div>
+            <label for="CustomerId">Customer ID:</label>
+            <input type="number" id="CustomerId" name="CustomerId" required>
+        </div>
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="gender">Gender:</label>
+            <select id="gender" name="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+        <div>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+        </div>
+        <div>
+            <label for="address">Address:</label>
+            <input type="text" id="address" name="address" required>
+        </div>
+        <button onclick="InputCustomer(event)">Insert</button>
+
+        <div>
+            <pre id="results"></pre>
+        </div>
+    </form>
+
+    <h1>Add New Employee</h1>
+    <form>
+        <div>
+            <label for="Id">Employee ID:</label>
+            <input type="number" id="Id" name="Id" required>
+        </div>
+        <div>
+            <label for="Role">Role:</label>
+            <input type="text" id="Role" name="Role" required>
+        </div>
+        <div>
+            <label for="Department">Department:</label>
+            <input type="text" id="Department" name="Department" required>
+        </div>
+        <button onclick="InputEmployee(event)">Insert</button>
+        <div>
+            <pre id="results1"></pre>
+        </div>
+    </form>
+    <h1>Add New Supervisor</h1>
+    <form>
+        <div>
+            <label for="Id">Employee ID:</label>
+            <input type="number" id="Id" name="Id" required>
+        </div>
+        <div>
+            <label for="SupervisorId">Supervisor's Id:</label>
+            <input type="text" id="SupervisorId" name="SupervisorId" required>
+        <div>
+            <label for="Role">Role:</label>
+            <input type="text" id="Role" name="Role" required>
+        </div>
+        <div>
+            <label for="Department">Department:</label>
+            <input type="text" id="Department" name="Department" required>
+        </div>
+        <button onclick="InputSupervisor(event)">Insert</button>
+        <div>
+            <pre id="results2"></pre>
+        </div>
+    </form>
+    <h1>Add New Product</h1>
+    <form>
+        <div>
+            <label for="PCustomerId">Customer ID:</label>
+            <input type="number" id="PCustomerId" name="PCustomerId" required>
+        <div>
+            <label for="TransactionId">Transaction ID:</label>
+            <input type="text" id="TransactionId" name="TransactionId" required>
+        <div>
+            <label for="productID">Product ID:</label>
+            <input type="number" id="ProductId" name="productID" required>
+        </div>
+        <div>
+            <label for="ProductTame">Product Type:</label>
+            <input type="text" id="ProductType" name="ProductType" required>
+        <div>
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" name="quantity" required>
+        </div>
+        <div>
+            <label for="price">Price:</label>
+            <input type="number" id="price" name="price" step = "0.01" required>
+        </div>
+        <button onclick="InputProduct(event)">Insert</button>
+        <div>
+            <pre id="results3"></pre>
+        </div>
+    </form>
+    <h1>Add New Transaction</h1>
+    <form>
+        <div>
+            <label for="CustomerID">Customer ID:</label>
+            <input type="number" id="CustomerID" name="CustomerID" required>
+        </div>
+        <div>
+            <label for="TransactionNum">Transaction Number:</label>
+            <input type="number" id="TransactionNum" name="TransactionNum" required>
+        </div>
+        <div>
+            <label for="TransactionID">Transaction ID:</label>
+            <input type="text" id="TransactionID" name="TransactionID" required>
+        </div>
+        <div>
+            <label for="Date">Date:</label>
+            <input type="date" id="Date" name="Date" required>
+        </div>
+        <button onclick="InputTransaction(event)">Insert</button>
+        <div>
+            <pre id="results4"></pre>
+        </div>
+
+    <script>
+        async function InputCustomer(event) {
+            event.preventDefault();
+            const value1 = document.getElementById("CustomerId").value;
+            const value2 = document.getElementById("name").value;
+            const value3 = document.getElementById("address").value;
+            const value4 = document.getElementById("age").value;
+            const value5 = document.getElementById("gender").value;
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/CustomerInsert`;
+            const body = {
+                table: "customer",
+                    data: {
+                        CustomerId: value1,
+                        name: value2,
+                        address: value3,
+                        age: value4,
+                        gender: value5
+                    }
+                };
+            document.getElementById("results").textContent = "";
+
+            try {
+                document.getElementById("results").textContent = "Loading...";
+                const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("results").textContent = `Customer inserted successfully!`;
+            } catch (err) {
+                document.getElementById("results").textContent = `Error: ${err.message}`;
+            }
+        }
+        
+        async function InputSupervisor(event) {
+            event.preventDefault();
+            const value1 = document.getElementById("Id").value;
+            const value2 = document.getElementById("SupervisorId").value;
+            const value3 = document.getElementById("Role").value;
+            const value4 = document.getElementById("Department").value;
+            
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/InsertSupervisor`;
+            const body = {
+                table: "supervisor",
+                    data: {
+                        Id: value1,
+                        SupervisorId: value2,
+                        Role: value3,
+                        Department: value4,
+                    }
+                };
+            document.getElementById("results2").textContent = "";
+
+            try {
+                document.getElementById("results2").textContent = "Loading...";
+                const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("results2").textContent = `Supervisor inserted successfully!`;
+            } catch (err) {
+                document.getElementById("results2").textContent = `Error: ${err.message}`;
+            }
+        }
+        async function InputEmployee(event) {
+            event.preventDefault();
+            const value1 = document.getElementById("Id").value;
+            const value2 = document.getElementById("Role").value;
+            const value3 = document.getElementById("Department").value;
+            
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/InsertEmployee`;
+            const body = {
+                table: "emp",
+                    data: {
+                        Id: value1,
+                        Role: value2,
+                        Department: value3,
+                    }
+                };
+            document.getElementById("results1").textContent = "";
+
+            try {
+                document.getElementById("results1").textContent = "Loading...";
+                const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("results1").textContent = `Employee inserted successfully!`;
+            } catch (err) {
+                document.getElementById("results1").textContent = `Error: ${err.message}`;
+            }
+        }
+
+        async function InputTransaction(event) {
+            event.preventDefault();
+            const value1 = document.getElementById("CustomerID").value;
+            const value2 = document.getElementById("TransactionNum").value;
+            const value3 = document.getElementById("TransactionID").value;
+            const value4 = document.getElementById("Date").value;
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/InsertTransaction`;
+            const body = {
+                table: "transaction",
+                    data: {
+                        CustomerID: value1,
+                        TransactionNum: value2,
+                        TransactionID: value3,
+                        Date: value4,
+                    }
+                };
+            document.getElementById("results4").textContent = "";
+
+            try {
+                document.getElementById("results4").textContent = "Loading...";
+                const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("results4").textContent = `Transaction inserted successfully!`;
+            } catch (err) {
+                document.getElementById("results4").textContent = `Error: ${err.message}`;
+            }
+        }
+        async function InputProduct(event) {
+            event.preventDefault();
+            const value1 = document.getElementById("PCustomerId").value;
+            const value2 = document.getElementById("TransactionId").value;
+            const value3 = document.getElementById("ProductId").value;
+            const value4 = document.getElementById("ProductType").value;
+            const value5 = document.getElementById("quantity").value;
+            const value6 = document.getElementById("price").value;
+
+            const endpoint = `https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/InsertProduct`;
+            console.log("CustomerId value:", value1);
+            const body = {
+                table: "product",
+                    data: {
+                        CustomerId: value1,
+                        TransactionId: value2,
+                        ProductId: value3,
+                        ProductType: value4,
+                        quantity: value5,
+                        price: value6,
+                    }
+                };
+            document.getElementById("results3").textContent = "";
+
+            try {
+                document.getElementById("results3").textContent = "Loading...";
+                const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(body)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                }
+
+                const data = await response.json();
+                document.getElementById("results3").textContent = `Product inserted successfully!`;
+            } catch (err) {
+                document.getElementById("results3").textContent = `Error: ${err.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

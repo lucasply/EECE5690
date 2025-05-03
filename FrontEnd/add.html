@@ -11,6 +11,7 @@
             <a href="index.html">Home</a> |
             <a href="add.html">Add</a> |
             <a href="remove.html">Remove</a> |
+            <a href="modify.html">Modify</a> |
             <a href="view.html">View</a>
         </nav>
     </header>
@@ -165,22 +166,23 @@
             try {
                 document.getElementById("results").textContent = "Loading...";
                 const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify(body)
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(body)
                 });
 
+                const responseBody = await response.json(); // Always read JSON
+
                 if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}`);
+                    throw new Error(responseBody.error || `Server returned ${response.status}`);
                 }
 
-                const data = await response.json();
                 document.getElementById("results").textContent = `Customer inserted successfully!`;
             } catch (err) {
                 document.getElementById("results").textContent = `Error: ${err.message}`;
-            }
+            };
         }
         
         async function InputSupervisor(event) {

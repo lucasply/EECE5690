@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modify Records - Retail Database</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Modify Records from Database</h1>
+        <nav>
+            <a href="index.html">Home</a> |
+            <a href="add.html">Add</a> |
+            <a href="remove.html">Remove</a> |
+            <a href="modify.html">Modify</a> |
+            <a href="view.html">View</a>
+        </nav>
+    </header>
+
+    <h2>Modify Records</h2>
+    <form>
+        <div>
+            <label for="table">Table:</label>
+            <select id="table" name="table" onchange="updateSearchFields()">
+                <option value="customer">Customers</option>
+                <option value="emp">Employees</option>
+                <option value="product">Products</option>
+                <option value="transaction">Transactions</option>
+                <option value="supervisor">Superiors</option>
+            </select>
+        </div>
+        <div>
+            <div id="key_fields_container"></div>
+        </div>
+        <div>
+            <label for="search_field">Modify Field:</label>
+            <select id="search_field" name="search_field">
+            </select>
+        </div>
+        <div>
+            <label for="search_term">Modify Term:</label>
+            <input type="text" id="search_term" name="search_term">
+        </div>
+        <button onclick="Search(event)">Modify</button>
+        <div>
+            <pre id="results"></pre>
+        </div>
+    </form>
+
+    <script>
+        // Define search fields for each table
+        const searchFields = {
+            customer: [
+                { value: "name", label: "Name" },
+                { value: "address", label: "Address" },
+                { value: "age", label: "Age" },
+                { value: "gender", label: "Gender" }
+            ],
+            transaction: [
+                { value: "Date", label: "Date" }              
+            ],
+            product: [
+                { value: "ProductType", label: "Product Type" },
+                {value: "quantity", label: "Quantity"},
+                {value: "price", label: "Price"},
+            ],
+            emp: [
+                { value: "role", label: "Role" },
+                { value: "department", label: "Department" }
+            ],
+            supervisor: [
+                { value: "Role", label: "Role" },
+                { value: "Department", label: "Department" }
+            ]
+        };
+
+        // Function to update the search_field dropdown based on the selected table
+        function updateSearchFields() {
+            const table = document.getElementById("table").value;
+            const searchFieldDropdown = document.getElementById("search_field");
+
+            // Clear existing options
+            searchFieldDropdown.innerHTML = "";
+
+            // Populate new options based on the selected table
+            if (searchFields[table]) {
+                searchFields[table].forEach(field => {
+                    const option = document.createElement("option");
+                    option.value = field.value;
+                    option.textContent = field.label;
+                    searchFieldDropdown.appendChild(option);
+                });
+            }
+
+            updateKeyFields();
+        }
+
+        // Initialize the search_field dropdown on page load
+        document.addEventListener("DOMContentLoaded", updateSearchFields);
+
+        async function Search(event) {
+            event.preventDefault(); // Prevent the form from submitting and reloading the page
+
+            const value = document.getElementById("table").value;
+            if (value == "customer") Customer_Modify();
+            if (value == "emp") Employee_Modify();
+            if (value == "product") Product_Modify();
+            if (value == "transaction") Transaction_Modify();
+            if (value == "supervisor") Superior_Modify();
+        }
+
+    const keyFields = {
+        customer: ["CustomerId"],
+        emp: ["Id"],
+        product: ["TransactionID", "ProductID"],
+        transaction: ["CustomerId", "TransactionNum"],
+        supervisor: ["Id", "SupervisorId"]
+    };
+
+    function updateKeyFields() {
+        const table = document.getElementById("table").value;
+        const container = document.getElementById("key_fields_container");
+        container.innerHTML = ""; // Clear previous fields
+
+        if (keyFields[table]) {
+            keyFields[table].forEach(key => {
+                const label = document.createElement("label");
+                label.for = key;
+                label.textContent = `${key}:`;
+                const input = document.createElement("input");
+                input.type = "text";
+                input.name = key;
+                input.id = key;
+                input.required = true;
+
+                container.appendChild(label);
+                container.appendChild(input);
+                container.appendChild(document.createElement("br"));
+            });
+        }
+    }
+
+    async function Customer_Modify() {
+        const customerId = document.getElementById("CustomerId").value;
+        const field = document.getElementById("search_field").value;
+        const newValue = document.getElementById("search_term").value;
+
+        const data = {
+            key: { CustomerId: customerId },
+            update: { [field]: newValue }
+        };
+        console.log(data);
+        try {
+            const response = await fetch("https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/CustomerModify", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                    throw new Error(result.error || `Server returned ${response.status}`);
+                }
+                document.getElementById("results").textContent = `Customer: ${customerId} modified successfully!`;
+        } catch (error) {
+            document.getElementById("results").textContent = `Error: ${error.message}`;
+        }
+    }
+
+    async function Product_Modify() {
+        const transactionId = document.getElementById("TransactionID").value;
+        const productId = document.getElementById("ProductID").value;
+        const field = document.getElementById("search_field").value;
+        const newValue = document.getElementById("search_term").value;
+
+        const data = {
+            key: {
+                TransactionID: transactionId,
+                ProductID: productId
+            },
+            update: {
+                [field]: newValue
+            }
+        };
+        try {
+            const response = await fetch("https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/ProductModify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                    throw new Error(result.error || `Server returned ${response.status}`);
+                }
+                document.getElementById("results").textContent = `Product info with id: ${productId}, on transaction: ${transactionId}, has been modified successfully!`;
+        } catch (error) {
+            console.error(error);
+            document.getElementById("results").textContent = `Error: ${error.message}`;
+        }
+    }
+
+
+    async function Employee_Modify() {
+        const employeeId = document.getElementById("Id").value;
+        const field = document.getElementById("search_field").value;
+        const newValue = document.getElementById("search_term").value;
+
+        const data = {
+            key: { Id: employeeId },
+            update: { [field]: newValue }
+        };
+
+        try {
+            const response = await fetch("https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/EmployeeModify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                    throw new Error(result.error || `Server returned ${response.status}`);
+                }
+                document.getElementById("results").textContent = `Employee with id: ${employeeId} modified successfully!`;
+        } catch (error) {
+            console.error(error);
+            document.getElementById("results").textContent = `Error: ${error.message}`;
+        }
+    }
+
+    async function Transaction_Modify() {
+        const customerId = document.getElementById("CustomerId").value;
+        const transactionNum = document.getElementById("TransactionNum").value;
+        const field = document.getElementById("search_field").value;
+        const newValue = document.getElementById("search_term").value;
+
+        const data = {
+            key: { CustomerId: customerId, TransactionNum: transactionNum },
+            update: { [field]: newValue }
+        };
+
+        try {
+            const response = await fetch("https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/TransactionModify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                    throw new Error(result.error || `Server returned ${response.status}`);
+                }
+                document.getElementById("results").textContent = `Transaction with id: ${transactionNum} modified successfully!`;
+        } catch (error) {
+            console.error(error);
+            document.getElementById("results").textContent = `Error: ${error.message}`;
+        }
+    }
+
+    async function Superior_Modify() {
+        const employeeId = document.getElementById("Id").value;
+        const supervisorId = document.getElementById("SupervisorId").value;
+        const field = document.getElementById("search_field").value;
+        const newValue = document.getElementById("search_term").value;
+
+        const data = {
+            key: { Id: employeeId, SupervisorId: supervisorId },
+            update: { [field]: newValue }
+        };
+
+        try {
+            const response = await fetch("https://s4xqlt3xg9.execute-api.us-east-2.amazonaws.com/prod/SupervisorModify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                    throw new Error(result.error || `Server returned ${response.status}`);
+                }
+            document.getElementById("results").textContent = `Superior with Id: ${employeeId}, and Supervisor Id: ${supervisorId} modified successfully!`;
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById("results").textContent = `Error: ${error.message}`;
+        }
+    }
+
+
+    </script>    
+    
+</body>
+</html>

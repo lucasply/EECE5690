@@ -1,0 +1,115 @@
+exports.handler = async (event) => {
+    const mysql = require('mysql');
+
+    // Connection details for your RDS instance
+    const connection = mysql.createConnection({
+        host: 'mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'admin123',
+        database: 'project',
+        port: 3306
+    });
+
+    return new Promise((resolve, reject) => {
+        // Connect to the database
+        connection.connect((err) => {
+            if (err) {
+                console.error('Error connecting to the database: ', err);
+                reject({
+                    statusCode: 500,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Access-Control-Allow-Methods": "OPTIONS,POST"
+                    },
+                    body: JSON.stringify({ error: 'Connection error' })
+                });
+                return; // Ensure the function stops here on connection error
+            }
+            console.log('Connected to the database');
+
+            // Parse the JSON body to get the employee data
+            let parsedBody;
+            try {
+                parsedBody = JSON.parse(event.body);
+            } catch (parseError) {
+                console.error('Error parsing request body: ', parseError);
+                reject({
+                    statusCode: 400,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Access-Control-Allow-Methods": "OPTIONS,POST"
+                    },
+                    body: JSON.stringify({ error: 'Invalid JSON in request body' })
+                });
+                connection.end();
+                return;
+            }
+
+            const { CustomerID, TransactionNum, TransactionID, Date } = parsedBody.data;
+
+            // Validate parameters
+            if (CustomerID === undefined || TransactionNum === undefined || TransactionID === undefined || Date === undefined) {
+                reject({
+                    statusCode: 400,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Headers": "Content-Type",
+                        "Access-Control-Allow-Methods": "OPTIONS,POST"
+                    },
+                    body: JSON.stringify({ error: 'Missing one or more required parameters' })
+                });
+                connection.end();
+                return;
+            }
+
+            // Query to insert into the employee table
+            connection.query(
+                'INSERT INTO transaction(CustomerID, TransactionNum, TransactionID, Date) VALUES (?, ?, ?, ?)',
+                [CustomerID, TransactionNum, TransactionID, Date],
+                (err, results) => {
+                    if (err) {
+                        if (err.code === 'ER_DUP_ENTRY') {
+                            reject({
+                                statusCode: 400,
+                                headers: {
+                                    "Access-Control-Allow-Origin": "*",
+                                    "Access-Control-Allow-Headers": "Content-Type",
+                                    "Access-Control-Allow-Methods": "OPTIONS,POST"
+                                },
+                                body: JSON.stringify({ error: 'Duplicate Employee Id' })
+                            });
+                        } else {
+                            console.error('Error during query: ', err);
+                            reject({
+                                statusCode: 500,
+                                headers: {
+                                    "Access-Control-Allow-Origin": "*",
+                                    "Access-Control-Allow-Headers": "Content-Type",
+                                    "Access-Control-Allow-Methods": "OPTIONS,POST"
+                                },
+                                body: JSON.stringify({ error: 'Query error' })
+                            });
+                        }
+                        connection.end();
+                        return;
+                    }
+
+                    console.log('Query results: ', results);
+                    resolve({
+                        statusCode: 200,
+                        headers: {
+                            "Access-Control-Allow-Origin": "*",
+                            "Access-Control-Allow-Headers": "Content-Type",
+                            "Access-Control-Allow-Methods": "OPTIONS,POST"
+                        },
+                        body: JSON.stringify({ message: 'Employee added successfully', results })
+                    });
+
+                    connection.end();
+                }
+            );
+        });
+    });
+};

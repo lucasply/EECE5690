@@ -1,0 +1,81 @@
+exports.handler = async (event) => {
+    const mysql = require('mysql');
+
+    // Connection details for your RDS instance
+    const connection = mysql.createConnection({
+        host: 'mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'admin123',
+        database: 'project',
+        port: 3306
+    });
+
+    return new Promise((resolve, reject) => {
+        connection.connect((err) => {
+            if (err) {
+                console.error('Error connecting to the database:', err);
+                reject({
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Connection error' })
+                });
+                return;
+            }
+        });
+
+        // Extract query parameters
+        const params = event.queryStringParameters || {};
+        const conditions = [];
+        const values = [];
+
+        // Dynamically build the WHERE clause based on provided parameters
+        if (params.customerId) {
+            conditions.push('CustomerId = ?');
+            values.push(params.customerId);
+        }
+        if (params.transactionID) {
+            conditions.push('TransactionID =?');
+            values.push(params.transactionID);
+        }
+        if (params.productId) {
+            conditions.push('productId = ?');
+            values.push(params.productId);
+        }
+        if(params.ProductType){
+            conditions.push('ProductType LIKE ?');
+            values.push(params.ProductType);
+        }
+
+        // If no parameters are provided, return an error
+        if (conditions.length === 0) {
+            reject({
+                statusCode: 400,
+                body: JSON.stringify({ error: 'At least one query parameter is required' })
+            });
+            connection.end();
+            return;
+        }
+
+        // Construct the SQL query
+        const query = `SELECT * FROM product WHERE ${conditions.join(' AND ')}`;
+
+        // Execute the query
+        connection.query(query, values, (err, results) => {
+            if (err) {
+                console.error('Error during query:', err);
+                reject({
+                    statusCode: 500,
+                    body: JSON.stringify({ error: err.message || 'Query error' })
+                });
+            } else {
+                console.log('Query results:', results);
+                resolve({
+                    statusCode: 200,
+                    body: JSON.stringify(results)
+                });
+            }
+
+            // End the connection
+            connection.end();
+        });
+    });
+};

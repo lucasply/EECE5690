@@ -1,0 +1,77 @@
+exports.handler = async (event) => {
+    const mysql = require('mysql');
+    
+    // Connection details for your RDS instance
+    const connection = mysql.createConnection({
+        host: 'mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'admin123',
+        database: 'project',
+        port: 3306
+    });
+
+    return new Promise((resolve, reject) => {
+        // Connect to the database
+        connection.connect((err) => {
+            if (err) {
+                console.error('Error connecting to the database: ', err);
+                resolve({
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Connection error' })
+                });
+                return;
+            }            
+            console.log('Connected to the database');
+
+            // Parse the JSON body to get the customer data
+            const { CustomerId, name, address, age, gender } = JSON.parse(event.body).data;
+
+            // Validate parameters
+            if (!CustomerId || !name || !address || !age || !gender) {
+                resolve({
+                    statusCode: 400,
+                    body: JSON.stringify({ error: 'Missing one or more required parameters' })
+                });
+                connection.end();
+                return;
+            }            
+
+            // Query to insert into the customer table
+            connection.query('INSERT INTO customer(CustomerId, name, address, age, gender) VALUES (?, ?, ?, ?, ?)', 
+                [CustomerId, name, address, age, gender], (err, results) => {
+                    if (err) {
+                        console.error('error: ', err);  
+                        if (err.code === '1062' || err.code === 'ER_DUP_ENTRY') {
+                            console.error('Duplicate entry error: ', err);  
+                            resolve({
+                                statusCode: 400,
+                                body: JSON.stringify({ error: 'Duplicate CustomerId' })
+                            });
+                        } else {
+                            console.error('Error during query: ', err);
+                            resolve({
+                                statusCode: 500,
+                                body: JSON.stringify({ error: 'Query error' })
+                            });
+                        }
+                        
+                        connection.end(); // Close connection on error
+                        return;
+                    }
+
+                    console.log('Query results: ', results);
+                    resolve({
+                        statusCode: 200,
+                        headers: {
+                            "Access-Control-Allow-Origin": "*", 
+                            "Access-Control-Allow-Headers": "Content-Type",
+                            "Access-Control-Allow-Methods": "OPTIONS,POST"
+                        },
+                        body: JSON.stringify(results) // Return results as a JSON string
+                    });
+
+                    connection.end(); // Close connection after query is completed
+                });
+        });
+    });
+};

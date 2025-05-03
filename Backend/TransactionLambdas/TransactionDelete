@@ -1,0 +1,60 @@
+exports.handler = async (event) => {
+    const mysql = require('mysql');
+
+    const connection = mysql.createConnection({
+        host: 'mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'admin123',
+        database: 'project',
+        port: 3306
+    });
+
+    return new Promise((resolve, reject) => {
+        connection.connect((err) => {
+            if (err) {
+                console.error('Error connecting to the database: ', err);
+                reject({
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Connection error' })
+                });
+                return;
+            }
+        });
+
+        const customerId = event.queryStringParameters?.customerId;
+        const transactionId = event.queryStringParameters?.transactionId;
+
+        if (!customerId || !transactionId) {
+            reject({
+                statusCode: 400,
+                body: JSON.stringify({ error: 'CustomerId and TransactionId parameters are required' })
+            });
+            return;
+        }
+
+        const deleteQuery = 'DELETE FROM transaction WHERE CustomerID = ? AND TransactionID = ?';
+        connection.query(deleteQuery, [customerId, transactionId], (err, results) => {
+            connection.end();
+
+            if (err) {
+                console.error('Error during query: ', err);
+                reject({
+                    statusCode: 500,
+                    body: JSON.stringify({ error: 'Query error' })
+                });
+            } else {
+                if (results.affectedRows === 0) {
+                    resolve({
+                        statusCode: 404,
+                        body: JSON.stringify({ message: `Transaction with ID ${transactionId} for Customer ${customerId} not found.` })
+                    });
+                } else {
+                    resolve({
+                        statusCode: 200,
+                        body: JSON.stringify({ message: `Successfully deleted Transaction: ${transactionId} for Customer: ${customerId}` })
+                    });
+                }
+            }
+        });
+    });
+};

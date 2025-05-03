@@ -1,0 +1,61 @@
+exports.handler = async (event) => {
+    const mysql = require('mysql2/promise'); // Use promise-based MySQL2
+    
+    const connection = await mysql.createConnection({
+        host: 'mydb.cte2i8wsaut6.us-east-2.rds.amazonaws.com',
+        user: 'admin',
+        password: 'admin123',
+        database: 'project',
+        port: 3306
+    });
+
+    const { key, update } = JSON.parse(event.body); // Extract key and update from the request body
+    
+    // Validate key and update
+    if (!key || !update) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: 'Missing required parameters' })
+        };
+    }
+
+    // Dynamically build the WHERE condition based on the key fields
+    const whereConditions = Object.keys(key)
+        .map(field => `${field} = ?`)
+        .join(' AND ');
+
+    // Build the SQL query with the dynamic WHERE condition
+    const fieldsToUpdate = Object.keys(update).map(field => `${field} = ?`).join(', ');
+    const values = [...Object.values(update), ...Object.values(key)];
+    console.log("Update object:", fieldsToUpdate);
+    console.log("Values:", values);
+
+    // SQL query to update the record
+    const sql = `UPDATE product SET ${fieldsToUpdate} WHERE ${whereConditions}`;
+    
+    try {
+        // Execute the query
+        const [result] = await connection.execute(sql, values);
+        
+        // Check if any rows were updated
+        if (result.changedRows === 0) {
+            return {
+                statusCode: 404,
+                body: JSON.stringify({ error: 'Records have already updated, or ProductId and Transactionid do not exist' })
+            };
+        }
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: 'Record updated successfully' })
+        };
+    } catch (err) {
+        console.error('Error during update: ', err);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: 'Failed to update record', details: err.message })
+        };
+    } finally {
+        connection.end(); // Close connection
+    }
+};
